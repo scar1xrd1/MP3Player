@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static MP3Player.Classes;
 
 namespace MP3Player
 {
@@ -20,12 +21,14 @@ namespace MP3Player
 
         // ЭЛЕМЕНТЫ
         RoundedPictureBox roundedPictureBox1;
+        RoundedButton roundedButton1;
 
         public Form1()
         {
             InitializeComponent();
             MyInitialize();
         }
+
         
         private void MyInitialize()
         {
@@ -35,67 +38,84 @@ namespace MP3Player
             roundedPictureBox1.Image = Image.FromFile("Images/NoSong.png");
             roundedPictureBox1.BackColor = Color.Transparent; //Color.FromArgb(16, 255,255,255);
             roundedPictureBox1.CornerRadius = 40;
+            // roundedButton1
+            roundedButton1 = new RoundedButton();
+            roundedButton1.BackColor = Color.Transparent;
+            roundedButton1.BackgroundImage = Image.FromFile("Images/ButtonImages/ButtonStatePause.png");
+            roundedButton1.BackgroundImageLayout = ImageLayout.Zoom;
+            roundedButton1.Size = new Size(75, 75);
+            roundedButton1.FlatStyle = FlatStyle.Flat;
+            roundedButton1.FlatAppearance.BorderSize = 0;
+            roundedButton1.CornerRadius = 16;
+            roundedButton1.MouseEnter += RoundedButton1_MouseEnter;
+            roundedButton1.MouseUp += RoundedButton1_MouseEnter;
+            roundedButton1.MouseLeave += RoundedButton1_MouseLeave;
+            roundedButton1.MouseClick += RoundedButton1_MouseClick;
+            roundedButton1.MouseDown += RoundedButton1_MouseDown;
             // Controls
             Controls.Add(roundedPictureBox1);
-
+            Controls.Add(roundedButton1);
             // other 
             MoveControls();
         }
 
+        private void SetButtonImage(Button button, ImageState image)
+        {
+            if(image == ImageState.Pause) button.BackgroundImage = Image.FromFile("Images/ButtonImages/ButtonStatePause.png");
+            else if(image == ImageState.PauseFocus) button.BackgroundImage = Image.FromFile("Images/ButtonImages/ButtonStatePauseFocusEnter.png");
+            else if(image == ImageState.PauseClick) button.BackgroundImage = Image.FromFile("Images/ButtonImages/ButtonStatePauseClick.png");
+            else if(image == ImageState.Play) button.BackgroundImage = Image.FromFile("Images/ButtonImages/ButtonStatePlay.png");
+            else if (image == ImageState.PlayFocus) button.BackgroundImage = Image.FromFile("Images/ButtonImages/ButtonStatePlayFocusEnter.png");
+            else if (image == ImageState.PlayClick) button.BackgroundImage = Image.FromFile("Images/ButtonImages/ButtonStatePlayClick.png");
+        }
+
+        private void RoundedButton1_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (roundedButton1.ButtonState == ButtonState.Pause) SetButtonImage(roundedButton1, ImageState.PauseClick);
+            else SetButtonImage(roundedButton1, ImageState.PlayClick);
+        }
+        private void RoundedButton1_MouseLeave(object sender, EventArgs e)
+        {
+            if (roundedButton1.ButtonState == ButtonState.Pause) SetButtonImage(roundedButton1, ImageState.Pause);
+            else SetButtonImage(roundedButton1, ImageState.Play);
+        }
+
+        private void RoundedButton1_MouseEnter(object sender, EventArgs e)
+        {
+            if(roundedButton1.ButtonState == ButtonState.Pause) SetButtonImage(roundedButton1, ImageState.PauseFocus);
+            else SetButtonImage(roundedButton1, ImageState.PlayFocus);
+        }
+       
+        private void RoundedButton1_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (roundedButton1.ButtonState == ButtonState.Pause)
+            {
+                SetButtonImage(roundedButton1, ImageState.Play);
+                roundedButton1.ButtonState = ButtonState.Play;
+
+                // ПЕСНЯ НАЧИНАЕТ ИГРАТЬ
+            }
+            else
+            {
+                SetButtonImage(roundedButton1, ImageState.Pause);
+                roundedButton1.ButtonState = ButtonState.Pause;
+            }
+        }
+
         private void MoveControls()
         {
-            roundedPictureBox1.Location = new Point(Width / 2 - roundedPictureBox1.Width / 2, 50);
+            roundedPictureBox1.Location = new Point(Width / 2 - roundedPictureBox1.Width / 2, 70);
+            roundedButton1.Location = new Point(roundedPictureBox1.Location.X + roundedButton1.Width*2 - 83, roundedPictureBox1.Height + 85);
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            //GraphicsPath roundedRect = new GraphicsPath();
-            //roundedRect.AddArc(0, 0, 2 * cornerRadius, 2 * cornerRadius, 180, 90);
-            //roundedRect.AddArc(Width - 2 * cornerRadius, 0, 2 * cornerRadius, 2 * cornerRadius, 270, 90);
-            //roundedRect.AddArc(Width - 2 * cornerRadius, Height - 2 * cornerRadius, 2 * cornerRadius, 2 * cornerRadius, 0, 90);
-            //roundedRect.AddArc(0, Height - 2 * cornerRadius, 2 * cornerRadius, 2 * cornerRadius, 90, 90);
-            //Region = new Region(roundedRect);
+            // Тут будет загрузка шрифтов
         }
 
         private void Form1_Resize(object sender, EventArgs e)
         {
             MoveControls();
         }
-    }
-
-    public class RoundedPictureBox : PictureBox
-    {
-        private int cornerRadius = 10; // Радиус закругления углов
-
-        public int CornerRadius
-        {
-            get { return cornerRadius; }
-            set
-            {
-                cornerRadius = value;
-                Invalidate(); // Обновляем элемент при изменении радиуса закругления
-            }
-        }
-
-        protected override void OnPaint(PaintEventArgs pe)
-        {
-            using (var path = new System.Drawing.Drawing2D.GraphicsPath())
-            {
-                // Создаем закругленную форму с использованием текущего радиуса закругления и размеров элемента PictureBox
-                path.AddArc(0, 0, cornerRadius, cornerRadius, 180, 90); // Верхний левый угол
-                path.AddArc(Width - cornerRadius, 0, cornerRadius, cornerRadius, 270, 90); // Верхний правый угол
-                path.AddArc(Width - cornerRadius, Height - cornerRadius, cornerRadius, cornerRadius, 0, 90); // Нижний правый угол
-                path.AddArc(0, Height - cornerRadius, cornerRadius, cornerRadius, 90, 90); // Нижний левый угол
-
-                pe.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-                pe.Graphics.FillPath(new SolidBrush(BackColor), path); // Заполняем закругленную форму фоновым цветом
-
-                if (Image != null)
-                {
-                    pe.Graphics.Clip = new Region(path); // Устанавливаем обрезку для изображения в форме закругленного PictureBox
-                    pe.Graphics.DrawImage(Image, ClientRectangle); // Рисуем изображение в обрезанной форме
-                }
-            }
-        }
-    }
+    }    
 }
