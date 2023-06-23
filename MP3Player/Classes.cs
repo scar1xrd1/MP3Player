@@ -81,6 +81,7 @@ namespace MP3Player
             }
         }        
     }
+
     public enum ButtonState
     {
         Pause,
