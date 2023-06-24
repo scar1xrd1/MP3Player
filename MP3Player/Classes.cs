@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static MP3Player.Classes;
 
 namespace MP3Player
 {
@@ -80,6 +81,26 @@ namespace MP3Player
                 base.OnPaint(e);
             }
         }        
+    }
+
+    public class Playlist
+    {
+        public Image Image;
+        public string FolderPath { get; set; }
+        public string Title { get; set; }
+        List<string> Songs { get; set; }
+
+        public Playlist(Image image, string folderPath, string title) 
+        {
+            Image = image;
+            FolderPath = folderPath;
+            Title = title;
+        }
+
+        public void GetSongs()
+        {
+            // ПУТИ К ФАЙЛАМ ИЗ ПАПКИ ДОБАВЛЯЕТСЯ В Songs (только mp3)
+        }
     }
 
     public enum ButtonState
