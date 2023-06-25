@@ -122,6 +122,12 @@ namespace MP3Player
         LeftClick,
         Right,
         RightFocus,
-        RightClick
+        RightClick,
+        Add,
+        AddFocus,
+        AddClick,
+        AddFrom,
+        AddFromFocus,
+        AddFromClick
     }
 }
