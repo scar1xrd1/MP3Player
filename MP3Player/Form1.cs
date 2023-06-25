@@ -1,10 +1,13 @@
 ﻿using NAudio.Wave;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Text;
 using System.IO;
 using System.Linq;
+//using System.Reflection.Emit;
+using System.Threading;
 //using System.Reflection.Emit;
 using System.Windows.Forms;
 using static MP3Player.Classes;
@@ -26,6 +29,9 @@ namespace MP3Player
         int currentPlaylist = 0;
         int currentSong = 0;
 
+        int volume;
+        bool muted;
+
         FontFamily[] fontFamilies = FontFamily.Families;
 
         string[] formats = { ".png" };
@@ -39,9 +45,97 @@ namespace MP3Player
 
             AllowDrop = true;
 
-            AddPlaylist(Image.FromFile("Images/NoSong.png"), "MyPlaylist", "Playlists/MyPlaylist");
+            //AddPlaylist("Images/NoSong.png", "MyPlaylist", "Playlists/MyPlaylist");
 
-            //panel1.Controls.Add(flowLayoutPanelPlaylist);
+            //SaveData();
+            LoadData();
+        }
+
+        private void SaveData()
+        {
+            MyData myData = new MyData(currentPlaylist, currentSong, volume, muted);
+            File.WriteAllText("Data/MyData.txt", JsonConvert.SerializeObject(myData));
+            File.WriteAllText("Data/Playlists.txt", JsonConvert.SerializeObject(playlists));
+        }
+        private void LoadData()
+        {
+            try
+            {
+                List<Playlist> PlayLists = JsonConvert.DeserializeObject<List<Playlist>>(File.ReadAllText("Data/Playlists.txt"));
+
+                foreach(var playlist in PlayLists)
+                {
+                    AddPlaylist(playlist.ImagePath, playlist.Title, playlist.FolderPath);
+                }
+
+                MyData myData = JsonConvert.DeserializeObject<MyData>(File.ReadAllText("Data/MyData.txt"));
+
+                currentPlaylist = myData.CurrentPlaylist;
+                currentSong = myData.CurrentSong;
+                volume = myData.Volume;
+                muted = myData.Muted;
+
+                SetVolume(volume);
+                SetSongFromIndex(currentSong);
+            }
+            catch (Exception) { }
+        }
+
+        private void SetSongFromIndex(int index)
+        {
+            using (var audioFile = new AudioFileReader(songs[index]))
+            {
+                var tagLib = TagLib.File.Create(songs[index]);
+
+                labelNameSong.Text = tagLib.Tag.Title;
+
+                if (audioFile.TotalTime.Hours > 0)
+                {
+                    if (audioFile.TotalTime.Seconds > 9) labelSongTime.Text = $"{audioFile.TotalTime.Hours}:{audioFile.TotalTime.Minutes}:{audioFile.TotalTime.Seconds}";
+                    else labelSongTime.Text = $"{audioFile.TotalTime.Hours}:{audioFile.TotalTime.Minutes}:0{audioFile.TotalTime.Seconds}";
+                }
+                else
+                {
+                    if (audioFile.TotalTime.Seconds > 9) labelSongTime.Text = $"{audioFile.TotalTime.Minutes}:{audioFile.TotalTime.Seconds}";
+                    else labelSongTime.Text = $"{audioFile.TotalTime.Minutes}:0{audioFile.TotalTime.Seconds}";
+                }
+
+                trackBarSongTime.Maximum = (int)Math.Round(audioFile.TotalTime.TotalSeconds, 0);
+                trackBarSongTime.Minimum = 0;
+                trackBarSongTime.Value = 0;
+
+                roundedPictureBox.Image = GetAlbumArtFromMp3(songs[index]);
+                if (roundedPictureBox.Image == null) roundedPictureBox.Image = Image.FromFile("Images/NoSong.png");
+
+                SizeF textSize = TextRenderer.MeasureText(labelNameSong.Text, labelNameSong.Font);
+                int labelWidth = (int)textSize.Width;
+                int labelHeight = (int)textSize.Height;
+                int pictureBoxCenterX = roundedPictureBox.Location.X + roundedPictureBox.Width / 2;
+                //int pictureBoxCenterY = roundedPictureBox.Location.Y + roundedPictureBox.Height / 2;
+                labelNameSong.Size = new Size(labelWidth, labelHeight);
+                labelNameSong.Location = new Point(pictureBoxCenterX - labelWidth / 2, roundedPictureBox.Top - labelNameSong.Height - 10);
+            }
+        }
+
+        private void SetVolume(int volume)
+        {
+            if (volume == -1) muted = true;
+            else if(volume == -2) muted = false;
+
+            if (muted)
+            {
+                pictureBoxVolume.Image = Image.FromFile("Images/VolumeMute.png");
+            }            
+
+            if(!muted)
+            {
+                if(volume != -2) this.volume = volume;
+                else { /*поставить прежнюю громкость*/}
+
+                pictureBoxVolume.Image = Image.FromFile("Images/VolumeMax.png");
+            }            
+
+            SaveData();
         }
 
         private void AddSongsFromPlaylist(Playlist playlist)
@@ -116,7 +210,6 @@ namespace MP3Player
 
                 currentSong = 0;
                 flowLayoutPanelSongs.Controls.Add(objectContainer);
-
             }
         }
 
@@ -128,13 +221,15 @@ namespace MP3Player
 
                 int iter = 0;
                 foreach (var song in songs)
-                {
+                {                    
                     using (var audioFile = new AudioFileReader(song))
                     {
                         var tagLib = TagLib.File.Create(song);
 
                         if (label.Text == tagLib.Tag.Title || label.Text == Path.GetFileNameWithoutExtension(song))
                         {
+                            labelCurrentSongTime.Text = "0:00";
+
                             labelNameSong.Text = tagLib.Tag.Title;
                             if (label.Text == Path.GetFileNameWithoutExtension(song)) labelNameSong.Text = Path.GetFileNameWithoutExtension(song);
 
@@ -149,9 +244,12 @@ namespace MP3Player
                                 else labelSongTime.Text = $"{audioFile.TotalTime.Minutes}:0{audioFile.TotalTime.Seconds}";
                             }
 
-                            trackBar1.Maximum = (int)Math.Round(audioFile.TotalTime.TotalSeconds, 0);
-                            trackBar1.Minimum = 0;
-                            trackBar1.Value = 0;
+                            trackBarSongTime.Maximum = (int)Math.Round((double)audioFile.TotalTime.TotalSeconds, 0);
+
+                           // MessageBox.Show(audioFile.TotalTime.TotalSeconds.ToString());
+
+                            trackBarSongTime.Minimum = 0;
+                            trackBarSongTime.Value = 0;
 
                             roundedPictureBox.Image = GetAlbumArtFromMp3(song);
                             if (roundedPictureBox.Image == null) roundedPictureBox.Image = Image.FromFile("Images/NoSong.png");
@@ -161,18 +259,20 @@ namespace MP3Player
                             int labelWidth = (int)textSize.Width;
                             int labelHeight = (int)textSize.Height;
                             int pictureBoxCenterX = roundedPictureBox.Location.X + roundedPictureBox.Width / 2;
-                            int pictureBoxCenterY = roundedPictureBox.Location.Y + roundedPictureBox.Height / 2;
+                            //int pictureBoxCenterY = roundedPictureBox.Location.Y + roundedPictureBox.Height / 2;
                             labelNameSong.Size = new Size(labelWidth, labelHeight);
                             labelNameSong.Location = new Point(pictureBoxCenterX - labelWidth / 2, roundedPictureBox.Top - labelNameSong.Height - 10);
 
                             break;
                         }
                     }
+                    iter++;
                 }
             }
+            SaveData();
         }
 
-        private void AddPlaylist(Image image, string name, string path)
+        private void AddPlaylist(string imagePath, string name, string path)
         {
             if (flowLayoutPanelPlaylist.Controls.Count > 0) if (flowLayoutPanelPlaylist.Controls[currentPlaylist].Controls[2].ForeColor == Color.FromArgb(33, 191, 90)) flowLayoutPanelPlaylist.Controls[currentPlaylist].Controls[2].ForeColor = Color.White;
 
@@ -184,7 +284,9 @@ namespace MP3Player
             objectContainer.BackColor = Color.Transparent;
             objectContainer.Size = new Size(300, objectContainer.Height);
 
-            cover.Image = image;
+            if (!Directory.Exists(imagePath)) imagePath = "Images/NoSong.png";
+
+            cover.Image = Image.FromFile(imagePath);
             cover.BackColor = Color.Transparent;
             cover.Size = new Size(100, 100);
             cover.DragEnter += Cover_DragEnter;
@@ -213,7 +315,7 @@ namespace MP3Player
             objectContainer.Controls.Add(songsCount);
             objectContainer.Controls.Add(title);
 
-            playlists.Add(new Playlist(image, path, name));
+            playlists.Add(new Playlist(imagePath, path, name));
             currentPlaylist = playlists.Count - 1;
             AddSongsFromPlaylist(playlists[currentPlaylist]);
             flowLayoutPanelPlaylist.Controls.Add(objectContainer);
@@ -280,6 +382,18 @@ namespace MP3Player
 
                 if (openFileDialog1.ShowDialog() == DialogResult.OK)
                 {
+                    Control container = pictureBox.Parent;
+
+                    foreach (var playlist in playlists)
+                    {
+                        if (container.Controls[2].Text == playlist.Title)
+                        {
+                            playlist.ImagePath = openFileDialog1.FileName; 
+                            break;
+                        }
+                    }
+                    SaveData();
+
                     pictureBox.Image = Image.FromFile(openFileDialog1.FileName);
                 }
             }
@@ -356,8 +470,10 @@ namespace MP3Player
             roundedButtonRight.MouseEnter += RoundedButtonRight_MouseEnter;
             roundedButtonRight.MouseUp += RoundedButtonRight_MouseEnter;
             roundedButtonRight.MouseClick += RoundedButtonRight_MouseClick;
-            // trackBar1
-            trackBar1.Size = new Size(roundedPictureBox.Width * 2 - trackBar1.Width, trackBar1.Size.Height);
+            // trackBarSongTime
+            trackBarSongTime.Size = new Size(roundedPictureBox.Width * 2 - trackBarSongTime.Width, trackBarSongTime.Size.Height);
+            // trackBarVolume
+            trackBarVolume.Size = new Size(trackBarVolume.Width, roundedPictureBox.Height-pictureBoxVolume.Height - 3);
             //labelNameSong
             //labelNameSong.TextAlign = ContentAlignment.MiddleCenter;
             //labelNameSong.AutoSize = false;
@@ -448,9 +564,12 @@ namespace MP3Player
             roundedButtonPause.Location = new Point(roundedPictureBox.Location.X + roundedButtonPause.Width * 2 - 87, roundedPictureBox.Location.Y + roundedPictureBox.Height + 60);
             roundedButtonLeft.Location = new Point(roundedButtonPause.Left - roundedButtonLeft.Width - 10, roundedButtonPause.Location.Y + roundedButtonLeft.Height / 4 + 2);
             roundedButtonRight.Location = new Point(roundedButtonPause.Right + 10, roundedButtonPause.Location.Y + roundedButtonRight.Height / 4 + 2);
-            trackBar1.Location = new Point(roundedPictureBox.Location.X - trackBar1.Width / 6, roundedPictureBox.Bottom + 16);
-            labelCurrentSongTime.Location = new Point(trackBar1.Left - labelCurrentSongTime.Width - 2, trackBar1.Location.Y);
-            labelSongTime.Location = new Point(trackBar1.Right, trackBar1.Location.Y);
+            trackBarSongTime.Location = new Point(roundedPictureBox.Location.X - trackBarSongTime.Width / 6, roundedPictureBox.Bottom + 16);
+            labelCurrentSongTime.Location = new Point(trackBarSongTime.Left - labelCurrentSongTime.Width - 2, trackBarSongTime.Location.Y);
+            labelSongTime.Location = new Point(trackBarSongTime.Right, trackBarSongTime.Location.Y);
+            pictureBoxVolume.Location = new Point(roundedPictureBox.Right + 15, roundedPictureBox.Bottom - pictureBoxVolume.Height);
+            trackBarVolume.Location = new Point(roundedPictureBox.Right + 15, roundedPictureBox.Location.Y);
+            //pictureBox1.Location = new Point(labelSongTime.Right, labelSongTime.Location.Y);
             //labelNameSong.Location = new Point(roundedPictureBox.Location.X, roundedPictureBox.Top - labelNameSong.Height - 10);
             SizeF textSize = TextRenderer.MeasureText(labelNameSong.Text, labelNameSong.Font);
             int labelWidth = (int)textSize.Width;
@@ -509,6 +628,41 @@ namespace MP3Player
             //    // Снимаем ограничение на минимальный размер формы
             //    MinimumSize = new Size(0, 0);
             //}
+        }
+
+        private void pictureBoxVolume_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (!muted) SetVolume(-1);
+            else SetVolume(-2);
+
+        }
+
+        private void trackBarSongTime_Scroll(object sender, EventArgs e)
+        {
+            //if (trackBarSongTime.Value < 10) labelCurrentSongTime.Text = $"0:0{trackBarSongTime.Value}";
+            //else if (trackBarSongTime.Value < 60) labelCurrentSongTime.Text = $"0:{trackBarSongTime.Value}";
+            //else if (trackBarSongTime.Value - trackBarSongTime.Value / 2 * 60 < 10) labelCurrentSongTime.Text = $"{trackBarSongTime.Value / 60}:0{trackBarSongTime.Value - trackBarSongTime.Value / 2 * 60}";
+            //else labelCurrentSongTime.Text = $"{trackBarSongTime.Value / 60}:{trackBarSongTime.Value - trackBarSongTime.Value / 2 * 60}";
+            TimeSpan timeSpan = TimeSpan.FromSeconds(trackBarSongTime.Value);
+
+            if(timeSpan.Seconds < 10) labelCurrentSongTime.Text = $"{trackBarSongTime.Value/60}:0{timeSpan.Seconds}";
+            else labelCurrentSongTime.Text = $"{trackBarSongTime.Value / 60}:{timeSpan.Seconds}";
+        }
+    }
+
+    public class MyData
+    { 
+        public int CurrentPlaylist { get; set; }
+        public int CurrentSong { get; set; }
+        public int Volume { get; set; }
+        public bool Muted { get; set; }
+
+        public MyData(int currentPlaylist, int currentSong, int volume, bool muted)
+        { 
+            CurrentPlaylist = currentPlaylist; 
+            CurrentSong = currentSong;
+            Volume = volume;
+            Muted = muted;
         }
     }
 }

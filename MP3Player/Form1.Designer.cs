@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            this.trackBar1 = new System.Windows.Forms.TrackBar();
+            this.trackBarSongTime = new System.Windows.Forms.TrackBar();
             this.labelCurrentSongTime = new System.Windows.Forms.Label();
             this.labelSongTime = new System.Windows.Forms.Label();
             this.flowLayoutPanelPlaylist = new System.Windows.Forms.FlowLayoutPanel();
@@ -40,19 +40,24 @@
             this.panel2 = new System.Windows.Forms.Panel();
             this.flowLayoutPanelSongs = new System.Windows.Forms.FlowLayoutPanel();
             this.labelNameSong = new System.Windows.Forms.Label();
-            ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
+            this.trackBarVolume = new System.Windows.Forms.TrackBar();
+            this.pictureBoxVolume = new System.Windows.Forms.PictureBox();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarSongTime)).BeginInit();
             this.panel1.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
             this.panel2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarVolume)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxVolume)).BeginInit();
             this.SuspendLayout();
             // 
-            // trackBar1
+            // trackBarSongTime
             // 
-            this.trackBar1.Location = new System.Drawing.Point(533, 36);
-            this.trackBar1.Name = "trackBar1";
-            this.trackBar1.Size = new System.Drawing.Size(104, 45);
-            this.trackBar1.TabIndex = 1;
-            this.trackBar1.TickStyle = System.Windows.Forms.TickStyle.None;
+            this.trackBarSongTime.Location = new System.Drawing.Point(533, 36);
+            this.trackBarSongTime.Name = "trackBarSongTime";
+            this.trackBarSongTime.Size = new System.Drawing.Size(104, 45);
+            this.trackBarSongTime.TabIndex = 1;
+            this.trackBarSongTime.TickStyle = System.Windows.Forms.TickStyle.None;
+            this.trackBarSongTime.Scroll += new System.EventHandler(this.trackBarSongTime_Scroll);
             // 
             // labelCurrentSongTime
             // 
@@ -147,36 +152,61 @@
             this.labelNameSong.TabIndex = 7;
             this.labelNameSong.Text = "Нет трека";
             // 
+            // trackBarVolume
+            // 
+            this.trackBarVolume.Location = new System.Drawing.Point(713, 274);
+            this.trackBarVolume.Name = "trackBarVolume";
+            this.trackBarVolume.Orientation = System.Windows.Forms.Orientation.Vertical;
+            this.trackBarVolume.Size = new System.Drawing.Size(45, 104);
+            this.trackBarVolume.TabIndex = 8;
+            this.trackBarVolume.TickStyle = System.Windows.Forms.TickStyle.None;
+            // 
+            // pictureBoxVolume
+            // 
+            this.pictureBoxVolume.BackColor = System.Drawing.Color.Transparent;
+            this.pictureBoxVolume.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.pictureBoxVolume.Location = new System.Drawing.Point(725, 418);
+            this.pictureBoxVolume.Name = "pictureBoxVolume";
+            this.pictureBoxVolume.Size = new System.Drawing.Size(25, 25);
+            this.pictureBoxVolume.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBoxVolume.TabIndex = 9;
+            this.pictureBoxVolume.TabStop = false;
+            this.pictureBoxVolume.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pictureBoxVolume_MouseClick);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(32)))), ((int)(((byte)(32)))), ((int)(((byte)(32)))));
             this.ClientSize = new System.Drawing.Size(1176, 534);
+            this.Controls.Add(this.pictureBoxVolume);
+            this.Controls.Add(this.trackBarVolume);
             this.Controls.Add(this.labelNameSong);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.labelSongTime);
             this.Controls.Add(this.labelCurrentSongTime);
-            this.Controls.Add(this.trackBar1);
+            this.Controls.Add(this.trackBarSongTime);
             this.Controls.Add(this.panel1);
             this.Name = "Form1";
             this.Text = "Form1";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.SizeChanged += new System.EventHandler(this.Form1_SizeChanged);
             this.Resize += new System.EventHandler(this.Form1_Resize);
-            ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarSongTime)).EndInit();
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             this.contextMenuStrip1.ResumeLayout(false);
             this.panel2.ResumeLayout(false);
             this.panel2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarVolume)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxVolume)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
         }
 
         #endregion
-        private System.Windows.Forms.TrackBar trackBar1;
+        private System.Windows.Forms.TrackBar trackBarSongTime;
         private System.Windows.Forms.Label labelCurrentSongTime;
         private System.Windows.Forms.Label labelSongTime;
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanelPlaylist;
@@ -187,6 +217,8 @@
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanelSongs;
         private System.Windows.Forms.Label labelNameSong;
+        private System.Windows.Forms.TrackBar trackBarVolume;
+        private System.Windows.Forms.PictureBox pictureBoxVolume;
     }
 }
 
