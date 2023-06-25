@@ -137,12 +137,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Data\MyData.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Data\Playlists.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="Images\ButtonImages\ButtonStatePause.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -194,30 +188,8 @@
     <Content Include="Images\VolumeMute.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Playlists\MyPlaylist\Korol_i_SHut_-_Kukla_kolduna_%28musmore.com%29.mp3">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Playlists\MyPlaylist\Korol_i_SHut_-_Lesnik_%28musmore.com%29.mp3">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Playlists\MyPlaylist\Korol_i_SHut_-_Prygnu_so_skaly_%28musmore.com%29.mp3">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Playlists\MyPlaylist\madk1d - Толпы.mp3">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Playlists\MyPlaylist\NULL.mp3">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Playlists\MyPlaylist\Yuugen -BAY CITY.mp3">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Playlists\MyPlaylist\Перемотка - Старое кино.mp3">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Playlists\Images\" />
     <Folder Include="Resources\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
