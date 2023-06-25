@@ -85,14 +85,14 @@ namespace MP3Player
 
     public class Playlist
     {
-        public Image Image;
+        public string ImagePath { get; set; }
         public string FolderPath { get; set; }
         public string Title { get; set; }
         List<string> Songs { get; set; }
 
-        public Playlist(Image image, string folderPath, string title) 
+        public Playlist(string imagePath, string folderPath, string title) 
         {
-            Image = image;
+            ImagePath = imagePath;
             FolderPath = folderPath;
             Title = title;
         }
