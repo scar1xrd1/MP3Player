@@ -17,7 +17,6 @@ namespace MP3Player
     public partial class Form1 : Form
     {
         private int cornerRadiusButtons = 8; // Радиус закругления кнопок
-
         // ЭЛЕМЕНТЫ
         RoundedPictureBox roundedPictureBox;
         RoundedButton roundedButtonPause;
@@ -677,6 +676,14 @@ namespace MP3Player
                     if (!File.Exists(Path.Combine(playlists[currentPlaylist].FolderPath, Path.GetFileName(openFileDialog2.FileName))))
                     {
                         File.Copy(openFileDialog2.FileName, Path.Combine(playlists[currentPlaylist].FolderPath, Path.GetFileName(openFileDialog2.FileName)));
+
+                        string nums = "";
+                        for (int i = 0; i < flowLayoutPanelPlaylist.Controls[currentPlaylist].Controls[1].Text.Length; i++)
+                        {
+                            if(int.TryParse(flowLayoutPanelPlaylist.Controls[currentPlaylist].Controls[1].Text[i].ToString(), out int _)) nums += flowLayoutPanelPlaylist.Controls[currentPlaylist].Controls[1].Text[i];
+                        }
+
+                        flowLayoutPanelPlaylist.Controls[currentPlaylist].Controls[1].Text = $"Треки: {int.Parse(nums)+1}";
                         AddSongsFromPlaylist(playlists[currentPlaylist]);
                     }
                 }
