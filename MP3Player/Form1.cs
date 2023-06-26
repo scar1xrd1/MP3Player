@@ -66,7 +66,7 @@ namespace MP3Player
             {
                 List<Playlist> PlayLists = JsonConvert.DeserializeObject<List<Playlist>>(File.ReadAllText("Data/Playlists.txt"));
 
-                foreach(var playlist in PlayLists)
+                foreach (var playlist in PlayLists)
                 {
                     AddPlaylist(playlist.ImagePath, playlist.Title, playlist.FolderPath);
                 }
@@ -123,20 +123,20 @@ namespace MP3Player
         private void SetVolume(int volume)
         {
             if (volume == -1) muted = true;
-            else if(volume == -2) muted = false;
+            else if (volume == -2) muted = false;
 
             if (muted)
             {
                 pictureBoxVolume.Image = Image.FromFile("Images/VolumeMute.png");
-            }            
+            }
 
-            if(!muted)
+            if (!muted)
             {
-                if(volume != -2) this.volume = volume;
+                if (volume != -2) this.volume = volume;
                 else { /*поставить прежнюю громкость*/}
 
                 pictureBoxVolume.Image = Image.FromFile("Images/VolumeMax.png");
-            }            
+            }
 
             SaveData();
         }
@@ -224,7 +224,7 @@ namespace MP3Player
 
                 int iter = 0;
                 foreach (var song in songs)
-                {                    
+                {
                     using (var audioFile = new AudioFileReader(song))
                     {
                         var tagLib = TagLib.File.Create(song);
@@ -249,7 +249,7 @@ namespace MP3Player
 
                             trackBarSongTime.Maximum = (int)Math.Round((double)audioFile.TotalTime.TotalSeconds, 0);
 
-                           // MessageBox.Show(audioFile.TotalTime.TotalSeconds.ToString());
+                            // MessageBox.Show(audioFile.TotalTime.TotalSeconds.ToString());
 
                             trackBarSongTime.Minimum = 0;
                             trackBarSongTime.Value = 0;
@@ -391,7 +391,7 @@ namespace MP3Player
                     {
                         if (container.Controls[2].Text == playlist.Title)
                         {
-                            playlist.ImagePath = openFileDialog1.FileName; 
+                            playlist.ImagePath = openFileDialog1.FileName;
                             break;
                         }
                     }
@@ -518,7 +518,7 @@ namespace MP3Player
             // trackBarSongTime
             trackBarSongTime.Size = new Size(roundedPictureBox.Width * 2 - trackBarSongTime.Width, trackBarSongTime.Size.Height);
             // trackBarVolume
-            trackBarVolume.Size = new Size(trackBarVolume.Width, roundedPictureBox.Height-pictureBoxVolume.Height - 3);
+            trackBarVolume.Size = new Size(trackBarVolume.Width, roundedPictureBox.Height - pictureBoxVolume.Height - 3);
             //labelNameSong
             //labelNameSong.TextAlign = ContentAlignment.MiddleCenter;
             //labelNameSong.AutoSize = false;
@@ -553,7 +553,7 @@ namespace MP3Player
         private void RoundedButtonAddPlaylist_MouseClick(object sender, MouseEventArgs e)
         {
             SetButtonImage(roundedButtonAddPlaylist, ImageState.Add);
-            
+
             // ДОБАВИТЬ НОВЫЙ ПЛЕЙЛИСТ
         }
 
@@ -610,38 +610,46 @@ namespace MP3Player
 
         private void RoundedButton1_MouseDown(object sender, MouseEventArgs e)
         {
-            if (roundedButtonPause.ButtonState == ButtonState.Pause) SetButtonImage(roundedButtonPause, ImageState.PauseClick);
-            else SetButtonImage(roundedButtonPause, ImageState.PlayClick);
+            if (roundedButtonPause.ButtonState == MP3Player.Classes.ButtonState.Pause)
+                SetButtonImage(roundedButtonPause, ImageState.PauseClick);
+            else
+                SetButtonImage(roundedButtonPause, ImageState.PlayClick);
         }
+
         private void RoundedButton1_MouseLeave(object sender, EventArgs e)
         {
-            if (roundedButtonPause.ButtonState == ButtonState.Pause) SetButtonImage(roundedButtonPause, ImageState.Pause);
-            else SetButtonImage(roundedButtonPause, ImageState.Play);
+            if (roundedButtonPause.ButtonState == MP3Player.Classes.ButtonState.Pause)
+                SetButtonImage(roundedButtonPause, ImageState.Pause);
+            else
+                SetButtonImage(roundedButtonPause, ImageState.Play);
         }
 
         private void RoundedButton1_MouseEnter(object sender, EventArgs e)
         {
-            if (roundedButtonPause.ButtonState == ButtonState.Pause) SetButtonImage(roundedButtonPause, ImageState.PauseFocus);
-            else SetButtonImage(roundedButtonPause, ImageState.PlayFocus);
+            if (roundedButtonPause.ButtonState == MP3Player.Classes.ButtonState.Pause)
+                SetButtonImage(roundedButtonPause, ImageState.PauseFocus);
+            else
+                SetButtonImage(roundedButtonPause, ImageState.PlayFocus);
         }
 
         private void RoundedButton1_MouseClick(object sender, MouseEventArgs e)
         {
-            if (roundedButtonPause.ButtonState == ButtonState.Pause)
+            if (roundedButtonPause.ButtonState == MP3Player.Classes.ButtonState.Pause)
             {
                 SetButtonImage(roundedButtonPause, ImageState.Play);
-                roundedButtonPause.ButtonState = ButtonState.Play;
+                roundedButtonPause.ButtonState = MP3Player.Classes.ButtonState.Play;
 
                 // ПЕСНЯ НАЧИНАЕТ ИГРАТЬ
             }
             else
             {
                 SetButtonImage(roundedButtonPause, ImageState.Pause);
-                roundedButtonPause.ButtonState = ButtonState.Pause;
+                roundedButtonPause.ButtonState = MP3Player.Classes.ButtonState.Pause;
 
                 // ПЕСНЯ СТАВИТСЯ НА ПАУЗУ
             }
         }
+
 
         private void MoveControls()
         {

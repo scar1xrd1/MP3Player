@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using static MP3Player.Classes;
+using NAudio.Wave;
 
 namespace MP3Player
 {
@@ -30,18 +30,18 @@ namespace MP3Player
             {
                 using (var path = new System.Drawing.Drawing2D.GraphicsPath())
                 {
-                    path.AddArc(0, 0, cornerRadius, cornerRadius, 180, 90); 
-                    path.AddArc(Width - cornerRadius, 0, cornerRadius, cornerRadius, 270, 90); 
+                    path.AddArc(0, 0, cornerRadius, cornerRadius, 180, 90);
+                    path.AddArc(Width - cornerRadius, 0, cornerRadius, cornerRadius, 270, 90);
                     path.AddArc(Width - cornerRadius, Height - cornerRadius, cornerRadius, cornerRadius, 0, 90);
-                    path.AddArc(0, Height - cornerRadius, cornerRadius, cornerRadius, 90, 90); 
+                    path.AddArc(0, Height - cornerRadius, cornerRadius, cornerRadius, 90, 90);
 
                     pe.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-                    pe.Graphics.FillPath(new SolidBrush(BackColor), path); 
+                    pe.Graphics.FillPath(new SolidBrush(BackColor), path);
 
                     if (Image != null)
                     {
-                        pe.Graphics.Clip = new Region(path); 
-                        pe.Graphics.DrawImage(Image, ClientRectangle); 
+                        pe.Graphics.Clip = new Region(path);
+                        pe.Graphics.DrawImage(Image, ClientRectangle);
                     }
                 }
             }
@@ -50,6 +50,8 @@ namespace MP3Player
         public class RoundedButton : Button
         {
             private int cornerRadius = 10; // Радиус закругления углов
+            private WaveOutEvent outputDevice; // Объект WaveOutEvent для управления воспроизведением
+
             public ButtonState ButtonState { get; set; } = ButtonState.Pause;
 
             public int CornerRadius
@@ -59,6 +61,67 @@ namespace MP3Player
                 {
                     cornerRadius = value;
                     Invalidate(); // Обновляем элемент при изменении радиуса закругления
+                }
+            }
+
+            public RoundedButton()
+            {
+                // Привязка обработчика события Click к кнопке
+                this.Click += PausePlayButton_Click;
+                outputDevice = new WaveOutEvent();
+            }
+
+            public void PlaySong(string songPath)
+            {
+                if (outputDevice.PlaybackState == PlaybackState.Paused) // Если воспроизведение на паузе, возобновляем его
+                {
+                    outputDevice.Play();
+                }
+                else // Иначе начинаем воспроизведение новой песни
+                {
+                    // Здесь вы можете добавить код для воспроизведения песни,
+                    // используя переданный путь к песне (songPath).
+                    // Например, вы можете использовать библиотеку NAudio для воспроизведения аудио.
+
+                    // Пример кода для воспроизведения песни с использованием NAudio:
+                    using (var audioFile = new AudioFileReader(songPath))
+                    {
+                        outputDevice.Init(audioFile);
+                        outputDevice.Play();
+
+                        // Можно добавить обработчики событий для отслеживания статуса воспроизведения,
+                        // паузы, остановки и т. д.
+                        // outputDevice.PlaybackStopped += (sender, args) => { /* Код обработки события остановки воспроизведения */ };
+                        // outputDevice.Pause();
+                        // outputDevice.Resume();
+                        // и так далее...
+                    }
+                }
+            }
+
+            private void PausePlayButton_Click(object sender, EventArgs e)
+            {
+                // Переключение состояния кнопки
+                if (ButtonState == ButtonState.Pause)
+                {
+                    ButtonState = ButtonState.Play;
+                    //Text = "Пуск";
+                    // Выполнение действия при пуске
+                    // ...
+                    // Проигрывание песни
+                    string songPath = "C:\\Users\\LEOKE\\Downloads\\shadowraze.mp3";
+                    PlaySong(songPath);
+                }
+                else
+                {
+                    ButtonState = ButtonState.Pause;
+                    //Text = "Пауза";
+                    // Выполнение действия при паузе
+                    // Поставить воспроизведение на паузу
+                    if (outputDevice.PlaybackState == PlaybackState.Playing)
+                    {
+                        outputDevice.Pause();
+                    }
                 }
             }
 
@@ -80,54 +143,55 @@ namespace MP3Player
 
                 base.OnPaint(e);
             }
-        }        
-    }
-
-    public class Playlist
-    {
-        public string ImagePath { get; set; }
-        public string FolderPath { get; set; }
-        public string Title { get; set; }
-        List<string> Songs { get; set; }
-
-        public Playlist(string imagePath, string folderPath, string title) 
-        {
-            ImagePath = imagePath;
-            FolderPath = folderPath;
-            Title = title;
         }
 
-        public void GetSongs()
+
+        public class Playlist
         {
-            // ПУТИ К ФАЙЛАМ ИЗ ПАПКИ ДОБАВЛЯЕТСЯ В Songs (только mp3)
+            public string ImagePath { get; set; }
+            public string FolderPath { get; set; }
+            public string Title { get; set; }
+            List<string> Songs { get; set; }
+
+            public Playlist(string imagePath, string folderPath, string title)
+            {
+                ImagePath = imagePath;
+                FolderPath = folderPath;
+                Title = title;
+            }
+
+            public void GetSongs()
+            {
+                // ПУТИ К ФАЙЛАМ ИЗ ПАПКИ ДОБАВЛЯЕТСЯ В Songs (только mp3)
+            }
         }
-    }
 
-    public enum ButtonState
-    {
-        Pause,
-        Play
-    }
+        public enum ButtonState
+        {
+            Pause,
+            Play
+        }
 
-    public enum ImageState
-    {
-        Pause,
-        PauseFocus,
-        PauseClick,
-        Play,
-        PlayFocus,
-        PlayClick,
-        Left,
-        LeftFocus,
-        LeftClick,
-        Right,
-        RightFocus,
-        RightClick,
-        Add,
-        AddFocus,
-        AddClick,
-        AddFrom,
-        AddFromFocus,
-        AddFromClick
+        public enum ImageState
+        {
+            Pause,
+            PauseFocus,
+            PauseClick,
+            Play,
+            PlayFocus,
+            PlayClick,
+            Left,
+            LeftFocus,
+            LeftClick,
+            Right,
+            RightFocus,
+            RightClick,
+            Add,
+            AddFocus,
+            AddClick,
+            AddFrom,
+            AddFromFocus,
+            AddFromClick
+        }
     }
 }
