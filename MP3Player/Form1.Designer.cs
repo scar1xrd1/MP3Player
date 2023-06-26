@@ -42,6 +42,8 @@
             this.labelNameSong = new System.Windows.Forms.Label();
             this.trackBarVolume = new System.Windows.Forms.TrackBar();
             this.pictureBoxVolume = new System.Windows.Forms.PictureBox();
+            this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
+            this.openFileDialog2 = new System.Windows.Forms.OpenFileDialog();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarSongTime)).BeginInit();
             this.panel1.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
@@ -118,7 +120,8 @@
             // openFileDialog1
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
-            this.openFileDialog1.Filter = "PNG|*.png|All Files|*.*";
+            this.openFileDialog1.Filter = "PNG|*.png|All Files|*.*|JPG|*.jpg";
+            this.openFileDialog1.FilterIndex = 2;
             // 
             // panel2
             // 
@@ -173,6 +176,11 @@
             this.pictureBoxVolume.TabStop = false;
             this.pictureBoxVolume.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pictureBoxVolume_MouseClick);
             // 
+            // openFileDialog2
+            // 
+            this.openFileDialog2.FileName = "openFileDialog2";
+            this.openFileDialog2.Filter = "MP3|*.mp3";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -219,6 +227,8 @@
         private System.Windows.Forms.Label labelNameSong;
         private System.Windows.Forms.TrackBar trackBarVolume;
         private System.Windows.Forms.PictureBox pictureBoxVolume;
+        private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
+        private System.Windows.Forms.OpenFileDialog openFileDialog2;
     }
 }
 
