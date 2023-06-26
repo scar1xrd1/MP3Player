@@ -54,6 +54,11 @@ namespace MP3Player
             //GetTextDialog getTextDialog = new GetTextDialog();
             //getTextDialog.ShowDialog();
 
+            if(!Directory.Exists("Data")) Directory.CreateDirectory("Data");
+            if (!Directory.Exists("Playlists")) Directory.CreateDirectory("Playlists");
+            if (!File.Exists("Data/MyData.txt")) using (FileStream fileStream = File.Create("Data/MyData.txt"));
+            if (!File.Exists("Data/Playlists.txt")) using (FileStream fileStream = File.Create("Data/Playlists.txt"));
+
             //SaveData();
             LoadData();
         }
@@ -241,7 +246,7 @@ namespace MP3Player
                 objectContainer.Controls.Add(title);
                 objectContainer.Controls.Add(performer);
 
-                currentSong = JsonConvert.DeserializeObject<MyData>(File.ReadAllText("Data/MyData.txt")).CurrentSong;
+                try { currentSong = JsonConvert.DeserializeObject<MyData>(File.ReadAllText("Data/MyData.txt")).CurrentSong; } catch (Exception){ currentSong = 0; }
                 //currentSong = 0;
                 flowLayoutPanelSongs.Controls.Add(objectContainer);
             }
@@ -665,14 +670,17 @@ namespace MP3Player
         {
             SetButtonImage(roundedButtonAddSong, ImageState.Add);
 
-            if (openFileDialog2.ShowDialog() == DialogResult.OK)
+            if(playlists.Count > 0)
             {
-                if (!File.Exists(Path.Combine(playlists[currentPlaylist].FolderPath, Path.GetFileName(openFileDialog2.FileName))))
+                if (openFileDialog2.ShowDialog() == DialogResult.OK)
                 {
-                    File.Copy(openFileDialog2.FileName, Path.Combine(playlists[currentPlaylist].FolderPath, Path.GetFileName(openFileDialog2.FileName)));
-                    AddSongsFromPlaylist(playlists[currentPlaylist]);
+                    if (!File.Exists(Path.Combine(playlists[currentPlaylist].FolderPath, Path.GetFileName(openFileDialog2.FileName))))
+                    {
+                        File.Copy(openFileDialog2.FileName, Path.Combine(playlists[currentPlaylist].FolderPath, Path.GetFileName(openFileDialog2.FileName)));
+                        AddSongsFromPlaylist(playlists[currentPlaylist]);
+                    }
                 }
-            }
+            }            
 
             // ДОБАВИТЬ ПЕСНЮ В ПЛЕЙЛИСТ
         }
