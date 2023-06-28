@@ -44,6 +44,7 @@
             this.pictureBoxVolume = new System.Windows.Forms.PictureBox();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
             this.openFileDialog2 = new System.Windows.Forms.OpenFileDialog();
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.trackBarSongTime)).BeginInit();
             this.panel1.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
@@ -158,11 +159,13 @@
             // trackBarVolume
             // 
             this.trackBarVolume.Location = new System.Drawing.Point(713, 274);
+            this.trackBarVolume.Maximum = 100;
             this.trackBarVolume.Name = "trackBarVolume";
             this.trackBarVolume.Orientation = System.Windows.Forms.Orientation.Vertical;
             this.trackBarVolume.Size = new System.Drawing.Size(45, 104);
             this.trackBarVolume.TabIndex = 8;
             this.trackBarVolume.TickStyle = System.Windows.Forms.TickStyle.None;
+            this.trackBarVolume.Scroll += new System.EventHandler(this.trackBarVolume_Scroll);
             // 
             // pictureBoxVolume
             // 
@@ -181,6 +184,11 @@
             this.openFileDialog2.FileName = "openFileDialog2";
             this.openFileDialog2.Filter = "MP3|*.mp3";
             // 
+            // timer1
+            // 
+            this.timer1.Interval = 10;
+            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -198,7 +206,6 @@
             this.Name = "Form1";
             this.Text = "Form1";
             this.Load += new System.EventHandler(this.Form1_Load);
-            this.SizeChanged += new System.EventHandler(this.Form1_SizeChanged);
             this.Resize += new System.EventHandler(this.Form1_Resize);
             ((System.ComponentModel.ISupportInitialize)(this.trackBarSongTime)).EndInit();
             this.panel1.ResumeLayout(false);
@@ -229,6 +236,7 @@
         private System.Windows.Forms.PictureBox pictureBoxVolume;
         private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
         private System.Windows.Forms.OpenFileDialog openFileDialog2;
+        private System.Windows.Forms.Timer timer1;
     }
 }
 

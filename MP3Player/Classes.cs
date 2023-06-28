@@ -88,7 +88,7 @@ namespace MP3Player
         public string ImagePath { get; set; }
         public string FolderPath { get; set; }
         public string Title { get; set; }
-        List<string> Songs { get; set; }
+        List<string> Exception { get; set; }
 
         public Playlist(string imagePath, string folderPath, string title) 
         {

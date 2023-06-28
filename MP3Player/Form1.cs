@@ -26,10 +26,14 @@ namespace MP3Player
         RoundedButton roundedButtonAddSong;
         RoundedButton roundedButtonAddPlaylistFrom;
 
-        List<Playlist> playlists = new List<Playlist>();
+        List<Playlist> playlists;
         List<string> songs;
         int currentPlaylist = 0;
         int currentSong = 0;
+
+        private WaveOut waveOut;
+        private AudioFileReader audioFileReader;
+        private PlaybackState currentPlaybackState = PlaybackState.Stopped;
 
         int volume;
         bool muted;
@@ -53,18 +57,20 @@ namespace MP3Player
             //GetTextDialog getTextDialog = new GetTextDialog();
             //getTextDialog.ShowDialog();
 
-            if(!Directory.Exists("Data")) Directory.CreateDirectory("Data");
+            if (!Directory.Exists("Data")) Directory.CreateDirectory("Data");
             if (!Directory.Exists("Playlists")) Directory.CreateDirectory("Playlists");
-            if (!File.Exists("Data/MyData.txt")) using (FileStream fileStream = File.Create("Data/MyData.txt"));
-            if (!File.Exists("Data/Playlists.txt")) using (FileStream fileStream = File.Create("Data/Playlists.txt"));
+            if (!File.Exists("Data/MyData.txt")) using (FileStream fileStream = File.Create("Data/MyData.txt")) ;
+            if (!File.Exists("Data/Playlists.txt")) using (FileStream fileStream = File.Create("Data/Playlists.txt")) ;            
 
             //SaveData();
-            LoadData();
+            LoadData();            
         }
 
         private void SaveData()
         {
-            MyData myData = new MyData(currentPlaylist, currentSong, volume, muted);
+            //if(loadedData)
+            
+            MyData myData = new MyData(currentPlaylist, currentSong, trackBarVolume.Value, muted, trackBarSongTime.Value);
 
             //File.Delete("Data/MyData.txt");
             //File.Delete("Data/Playlists.txt");
@@ -74,6 +80,7 @@ namespace MP3Player
             //File.Create("Data/MyData.txt");
             //File.Create("Data/Playlists.txt");
 
+            File.WriteAllText("Data/MyData.txt", "");
             using (FileStream fs = new FileStream("Data/MyData.txt", FileMode.OpenOrCreate))
             {
                 byte[] bytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(myData)); // Преобразование строки в массив байтов
@@ -86,8 +93,7 @@ namespace MP3Player
                 byte[] bytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(playlists)); // Преобразование строки в массив байтов
                 fs.Write(bytes, 0, bytes.Length); // Запись массива байтов в файл
             }
-
-            //ForSave();
+                   //ForSave();
         }
 
         private void LoadData()
@@ -103,19 +109,25 @@ namespace MP3Player
 
                     currentPlaylist = myData.CurrentPlaylist;
                     currentSong = myData.CurrentSong;
-                    volume = myData.Volume;
+                    trackBarVolume.Value = myData.Volume;
+                    
                     muted = myData.Muted;
+                    
 
                     AddSongsFromPlaylist(playlists[currentPlaylist]);
                     for (int i = 0; i < flowLayoutPanelPlaylist.Controls.Count; i++) flowLayoutPanelPlaylist.Controls[i].Controls[2].ForeColor = Color.White;
                     flowLayoutPanelPlaylist.Controls[currentPlaylist].Controls[2].ForeColor = Color.FromArgb(33, 191, 90);
 
-                    SetVolume(volume);
+                    SetVolume(trackBarVolume.Value);
                     SetSongFromIndex(currentSong);
                     loadedData = true;
+                    trackBarSongTime.Value = myData.SongTime;
                 }
             }
-            catch (Exception) { }
+            catch (Exception) 
+            {
+
+            }
         }
 
         private void SetSongFromIndex(int index)
@@ -162,14 +174,30 @@ namespace MP3Player
             if (muted)
             {
                 pictureBoxVolume.Image = Image.FromFile("Images/VolumeMute.png");
+                if (audioFileReader != null) audioFileReader.Volume = 0.0f;
             }
 
             if (!muted)
             {
-                if (volume != -2) this.volume = volume;
-                else { /*поставить прежнюю громкость*/}
+                if (volume == -2) volume = trackBarVolume.Value;
 
-                pictureBoxVolume.Image = Image.FromFile("Images/VolumeMax.png");
+                if (volume <= 25)
+                {
+                    pictureBoxVolume.Image = Image.FromFile("Images/VolumeMin.png");
+                }
+                else if (volume <= 50)
+                {
+                    pictureBoxVolume.Image = Image.FromFile("Images/VolumeMedium.png");
+                }
+                else if (volume <= 75)
+                {
+                    pictureBoxVolume.Image = Image.FromFile("Images/VolumeMax.png");
+                }
+                else if (volume < 1)
+                {
+                    pictureBoxVolume.Image = Image.FromFile("Images/VolumeMute.png");
+                }
+                if (audioFileReader != null) audioFileReader.Volume = volume / 100f;
             }
 
             SaveData();
@@ -245,7 +273,9 @@ namespace MP3Player
                 objectContainer.Controls.Add(title);
                 objectContainer.Controls.Add(performer);
 
-                try { currentSong = JsonConvert.DeserializeObject<MyData>(File.ReadAllText("Data/MyData.txt")).CurrentSong; } catch (Exception){ currentSong = 0; }
+                if (JsonConvert.DeserializeObject<MyData>(File.ReadAllText("Data/MyData.txt")) != null) currentSong = JsonConvert.DeserializeObject<MyData>(File.ReadAllText("Data/MyData.txt")).CurrentSong;
+                else currentSong = 0;
+
                 //currentSong = 0;
                 flowLayoutPanelSongs.Controls.Add(objectContainer);
             }
@@ -301,6 +331,18 @@ namespace MP3Player
                             labelNameSong.Size = new Size(labelWidth, labelHeight);
                             labelNameSong.Location = new Point(pictureBoxCenterX - labelWidth / 2, roundedPictureBox.Top - labelNameSong.Height - 10);
 
+                            if (roundedButtonPause.ButtonState == ButtonState.Play)
+                            {
+                                PlaySong(song);
+                            }
+                            else
+                            {
+                                timer1.Stop();
+                                LoadSong(song);
+                                trackBarSongTime.Value = 0;
+                                timer1.Start();
+                            }
+
                             break;
                         }
                     }
@@ -312,6 +354,8 @@ namespace MP3Player
 
         private void AddPlaylist(string imagePath, string name, string path)
         {
+            if (playlists == null) playlists = new List<Playlist>();
+
             if (loadedData)
             {
                 List<Playlist> PlayLists = JsonConvert.DeserializeObject<List<Playlist>>(File.ReadAllText("Data/Playlists.txt"));
@@ -464,7 +508,7 @@ namespace MP3Player
                         {
                             if (!Directory.Exists("Playlists/Images")) Directory.CreateDirectory("Playlists/Images");
                             string path = $"Playlists/Images/{Path.GetFileName(openFileDialog1.FileName)}";
-                            File.Copy(openFileDialog1.FileName, path);
+                            if(!File.Exists(path)) File.Copy(openFileDialog1.FileName, path);
 
                             playlist.ImagePath = path;
                             break;
@@ -649,7 +693,7 @@ namespace MP3Player
                 }
 
             }
-
+            SaveData();
             // ДОБАВИТЬ НОВЫЙ ПЛЕЙЛИСТ
         }
 
@@ -669,7 +713,7 @@ namespace MP3Player
         {
             SetButtonImage(roundedButtonAddSong, ImageState.Add);
 
-            if(playlists.Count > 0)
+            if (playlists.Count > 0)
             {
                 if (openFileDialog2.ShowDialog() == DialogResult.OK)
                 {
@@ -680,14 +724,14 @@ namespace MP3Player
                         string nums = "";
                         for (int i = 0; i < flowLayoutPanelPlaylist.Controls[currentPlaylist].Controls[1].Text.Length; i++)
                         {
-                            if(int.TryParse(flowLayoutPanelPlaylist.Controls[currentPlaylist].Controls[1].Text[i].ToString(), out int _)) nums += flowLayoutPanelPlaylist.Controls[currentPlaylist].Controls[1].Text[i];
+                            if (int.TryParse(flowLayoutPanelPlaylist.Controls[currentPlaylist].Controls[1].Text[i].ToString(), out int _)) nums += flowLayoutPanelPlaylist.Controls[currentPlaylist].Controls[1].Text[i];
                         }
 
-                        flowLayoutPanelPlaylist.Controls[currentPlaylist].Controls[1].Text = $"Треки: {int.Parse(nums)+1}";
+                        flowLayoutPanelPlaylist.Controls[currentPlaylist].Controls[1].Text = $"Треки: {int.Parse(nums) + 1}";
                         AddSongsFromPlaylist(playlists[currentPlaylist]);
                     }
                 }
-            }            
+            }
 
             // ДОБАВИТЬ ПЕСНЮ В ПЛЕЙЛИСТ
         }
@@ -754,6 +798,15 @@ namespace MP3Player
                 roundedButtonPause.ButtonState = ButtonState.Play;
 
                 // ПЕСНЯ НАЧИНАЕТ ИГРАТЬ
+
+                if (currentPlaybackState == PlaybackState.Paused || currentPlaybackState == PlaybackState.Stopped && songs != null)
+                {
+                    PlaySong(songs[currentSong]);
+                }
+                else if (currentPlaybackState == PlaybackState.Playing)
+                {
+                    PauseSong();
+                }
             }
             else
             {
@@ -761,6 +814,61 @@ namespace MP3Player
                 roundedButtonPause.ButtonState = ButtonState.Pause;
 
                 // ПЕСНЯ СТАВИТСЯ НА ПАУЗУ
+
+                PauseSong();
+            }
+        }
+
+        private void LoadSong(string songPath)
+        {
+            if (waveOut == null) waveOut = new WaveOut();
+
+            waveOut.Stop();
+            waveOut.Dispose();
+            waveOut = null;
+
+            audioFileReader = new AudioFileReader(songPath);
+            waveOut = new WaveOut();
+            waveOut.Init(audioFileReader);
+
+            currentPlaybackState = PlaybackState.Paused;
+        }
+
+        private void PlaySong(string filePath)
+        {
+            if (waveOut != null && waveOut.PlaybackState == PlaybackState.Playing)
+            {
+                waveOut.Stop();
+                waveOut.Dispose();
+                waveOut = null;
+            }
+
+            audioFileReader = new AudioFileReader(filePath);
+            waveOut = new WaveOut();
+            waveOut.Init(audioFileReader);
+
+            if (muted) audioFileReader.Volume = 0.0f;
+            else audioFileReader.Volume = trackBarVolume.Value / 100f;
+
+            audioFileReader.CurrentTime = TimeSpan.FromSeconds(trackBarSongTime.Value);
+
+            waveOut.Play();
+
+            //audioFileReader.CurrentTime = TimeSpan.FromSeconds(trackBarSongTime.Value);
+
+            currentPlaybackState = PlaybackState.Playing;
+            //SetButtonImage(roundedButtonPause, ImageState.Pause);
+            timer1.Start();
+        }
+
+        private void PauseSong()
+        {
+            if (waveOut != null && waveOut.PlaybackState == PlaybackState.Playing)
+            {
+                waveOut.Pause();
+                currentPlaybackState = PlaybackState.Paused;
+                //SetButtonImage(roundedButtonPause, ImageState.Play);
+
             }
         }
 
@@ -826,25 +934,10 @@ namespace MP3Player
             MoveControls();
         }
 
-        private void Form1_SizeChanged(object sender, EventArgs e)
-        {
-            //if (Size.Width < 1080 || Size.Height < 300)
-            //{
-            //    // Устанавливаем минимальный размер формы на текущий размер
-            //    MinimumSize = ;
-            //}
-            //else
-            //{
-            //    // Снимаем ограничение на минимальный размер формы
-            //    MinimumSize = new Size(0, 0);
-            //}
-        }
-
         private void pictureBoxVolume_MouseClick(object sender, MouseEventArgs e)
         {
             if (!muted) SetVolume(-1);
             else SetVolume(-2);
-
         }
 
         private void trackBarSongTime_Scroll(object sender, EventArgs e)
@@ -857,6 +950,28 @@ namespace MP3Player
 
             if (timeSpan.Seconds < 10) labelCurrentSongTime.Text = $"{trackBarSongTime.Value / 60}:0{timeSpan.Seconds}";
             else labelCurrentSongTime.Text = $"{trackBarSongTime.Value / 60}:{timeSpan.Seconds}";
+
+            if (audioFileReader != null) audioFileReader.CurrentTime = TimeSpan.FromSeconds(trackBarSongTime.Value);
+
+            SaveData();
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            if (audioFileReader != null) trackBarSongTime.Value = (int)audioFileReader.CurrentTime.TotalSeconds;
+
+            TimeSpan timeSpan = TimeSpan.FromSeconds(trackBarSongTime.Value);
+            if (timeSpan.Seconds < 10) labelCurrentSongTime.Text = $"{trackBarSongTime.Value / 60}:0{timeSpan.Seconds}";
+            else labelCurrentSongTime.Text = $"{trackBarSongTime.Value / 60}:{timeSpan.Seconds}";
+
+            if (trackBarSongTime.Value == trackBarSongTime.Maximum) { }
+
+            if (playlists != null && songs != null) SaveData();
+        }
+
+        private void trackBarVolume_Scroll(object sender, EventArgs e)
+        {
+            SetVolume(trackBarVolume.Value);
         }
     }
 
@@ -866,13 +981,15 @@ namespace MP3Player
         public int CurrentSong { get; set; }
         public int Volume { get; set; }
         public bool Muted { get; set; }
+        public int SongTime { get; set; }
 
-        public MyData(int currentPlaylist, int currentSong, int volume, bool muted)
+        public MyData(int currentPlaylist, int currentSong, int volume, bool muted, int songTime)
         {
             CurrentPlaylist = currentPlaylist;
             CurrentSong = currentSong;
             Volume = volume;
             Muted = muted;
+            SongTime = songTime;
         }
     }
 
