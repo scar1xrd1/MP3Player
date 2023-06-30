@@ -741,12 +741,72 @@ namespace MP3Player
         {
             SetButtonImage(roundedButtonLeft, ImageState.Left);
 
+            if (songs != null)
+            {
+                if (currentSong - 1 >= 0)
+                {
+                    currentSong--;
+
+                    Label label = new Label();
+                    var tagLib = TagLib.File.Create(songs[currentSong]);
+                    label.Text = Path.GetFileName(tagLib.Tag.Title);
+                    if (label.Text == string.Empty) label.Text = Path.GetFileNameWithoutExtension(songs[currentSong]);
+                    Title_MouseClick(label, e);
+
+                    if(waveOut.PlaybackState == PlaybackState.Playing) PlaySong(songs[currentSong]);
+                    else LoadSong(songs[currentSong]);
+                }
+                else if (currentSong - 1 < 0)
+                {
+                    currentSong = songs.Count - 1;
+
+                    Label label = new Label();
+                    var tagLib = TagLib.File.Create(songs[currentSong]);
+                    label.Text = Path.GetFileName(tagLib.Tag.Title);
+                    if (label.Text == string.Empty) label.Text = Path.GetFileNameWithoutExtension(songs[currentSong]);
+                    Title_MouseClick(label, e);
+
+                    if (waveOut.PlaybackState == PlaybackState.Playing) PlaySong(songs[currentSong]);
+                    else LoadSong(songs[currentSong]);
+                }
+            }
+
             // ТРЕК ПЕРЕКЛЮЧАЕТСЯ НАЗАД
         }
 
         private void RoundedButtonRight_MouseClick(object sender, MouseEventArgs e)
         {
-            SetButtonImage(roundedButtonRight, ImageState.Right);
+            SetButtonImage(roundedButtonRight, ImageState.Right);            
+
+            if (songs != null)
+            {
+                if (currentSong + 1 < songs.Count)
+                {
+                    currentSong++;
+
+                    Label label = new Label();
+                    var tagLib = TagLib.File.Create(songs[currentSong]);
+                    label.Text = Path.GetFileName(tagLib.Tag.Title);
+                    if (label.Text == string.Empty) label.Text = Path.GetFileNameWithoutExtension(songs[currentSong]);
+                    Title_MouseClick(label, e);
+
+                    if (waveOut.PlaybackState == PlaybackState.Playing) PlaySong(songs[currentSong]);
+                    else LoadSong(songs[currentSong]);
+                }
+                else if (currentSong + 1 == songs.Count)
+                {
+                    currentSong = 0;
+
+                    Label label = new Label();
+                    var tagLib = TagLib.File.Create(songs[currentSong]);
+                    label.Text = Path.GetFileName(tagLib.Tag.Title);
+                    if (label.Text == string.Empty) label.Text = Path.GetFileNameWithoutExtension(songs[currentSong]);
+                    Title_MouseClick(label, e);
+
+                    if (waveOut.PlaybackState == PlaybackState.Playing) PlaySong(songs[currentSong]);
+                    else LoadSong(songs[currentSong]);
+                }
+            }
 
             // ТРЕК ПЕРЕКЛЮЧАЕТСЯ ВПЕРЁД
         }
