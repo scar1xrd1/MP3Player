@@ -1026,6 +1026,13 @@ namespace MP3Player
 
             if (trackBarSongTime.Value == trackBarSongTime.Maximum) { }
 
+            Text = $"{TimeSpan.FromSeconds(trackBarSongTime.Value).TotalSeconds} >= {audioFileReader.TotalTime.TotalSeconds}";
+
+            if (TimeSpan.FromSeconds(trackBarSongTime.Value).TotalSeconds + 1 >= Math.Round(audioFileReader.TotalTime.TotalSeconds, 0))
+            {
+                if (waveOut.PlaybackState == PlaybackState.Stopped) RoundedButtonRight_MouseClick(sender, new MouseEventArgs(MouseButtons.Left, 2, 0, 0, 0));
+            }
+
             if (playlists != null && songs != null) SaveData();
         }
 
