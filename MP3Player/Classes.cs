@@ -128,6 +128,9 @@ namespace MP3Player
         AddClick,
         AddFrom,
         AddFromFocus,
-        AddFromClick
+        AddFromClick,
+        Settings,
+        SettingsFocus,
+        SettingsClick
     }
 }

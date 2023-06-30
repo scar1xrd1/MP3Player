@@ -3,9 +3,11 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Drawing.Text;
 using System.IO;
 using System.Linq;
+using System.Runtime.Remoting.Activation;
 using System.Text;
 //using System.Reflection.Emit;
 //using System.Reflection.Emit;
@@ -25,6 +27,7 @@ namespace MP3Player
         RoundedButton roundedButtonAddPlaylist;
         RoundedButton roundedButtonAddSong;
         RoundedButton roundedButtonAddPlaylistFrom;
+        RoundedButton roundedButtonSettings;
 
         List<Playlist> playlists;
         List<string> songs;
@@ -320,6 +323,7 @@ namespace MP3Player
                             trackBarSongTime.Value = 0;
 
                             roundedPictureBox.Image = GetAlbumArtFromMp3(song);
+
                             if (roundedPictureBox.Image == null) roundedPictureBox.Image = Image.FromFile("Images/NoSong.png");
                             currentSong = iter;
 
@@ -634,6 +638,20 @@ namespace MP3Player
             roundedButtonAddPlaylistFrom.MouseEnter += RoundedButtonAddPlaylistFrom_MouseEnter;
             roundedButtonAddPlaylistFrom.MouseUp += RoundedButtonAddPlaylistFrom_MouseEnter;
             roundedButtonAddPlaylistFrom.MouseClick += RoundedButtonAddPlaylistFrom_MouseClick;
+            // roundedButtonSettings
+            roundedButtonSettings = new RoundedButton();
+            roundedButtonSettings.BackColor = Color.Transparent;
+            roundedButtonSettings.BackgroundImage = Image.FromFile("Images/ButtonImages/Settings.png");
+            roundedButtonSettings.BackgroundImageLayout = ImageLayout.Zoom;
+            roundedButtonSettings.Size = new Size(50, 50);
+            roundedButtonSettings.FlatStyle = FlatStyle.Flat;
+            roundedButtonSettings.FlatAppearance.BorderSize = 0;
+            roundedButtonSettings.CornerRadius = cornerRadiusButtons;
+            roundedButtonSettings.MouseDown += RoundedButtonSettings_MouseDown;
+            roundedButtonSettings.MouseLeave += RoundedButtonSettings_MouseLeave;
+            roundedButtonSettings.MouseEnter += RoundedButtonSettings_MouseEnter;
+            roundedButtonSettings.MouseUp += RoundedButtonSettings_MouseEnter;
+            roundedButtonSettings.MouseClick += RoundedButtonSettings_MouseClick;
             // trackBarSongTime
             trackBarSongTime.Size = new Size(roundedPictureBox.Width * 2 - trackBarSongTime.Width, trackBarSongTime.Size.Height);
             // trackBarVolume
@@ -649,10 +667,14 @@ namespace MP3Player
             Controls.Add(roundedButtonAddPlaylist);
             Controls.Add(roundedButtonAddSong);
             Controls.Add(roundedButtonAddPlaylistFrom);
+            Controls.Add(roundedButtonSettings);
             // other 
             MoveControls();
-        }
+        }       
 
+        private void RoundedButtonSettings_MouseEnter(object sender, EventArgs e) => SetButtonImage(roundedButtonSettings, ImageState.SettingsFocus);
+        private void RoundedButtonSettings_MouseLeave(object sender, EventArgs e) => SetButtonImage(roundedButtonSettings, ImageState.Settings);
+        private void RoundedButtonSettings_MouseDown(object sender, MouseEventArgs e) => SetButtonImage(roundedButtonSettings, ImageState.SettingsClick);
         private void RoundedButtonAddPlaylistFrom_MouseEnter(object sender, EventArgs e) => SetButtonImage(roundedButtonAddPlaylistFrom, ImageState.AddFromFocus);
         private void RoundedButtonAddPlaylistFrom_MouseLeave(object sender, EventArgs e) => SetButtonImage(roundedButtonAddPlaylistFrom, ImageState.AddFrom);
         private void RoundedButtonAddPlaylistFrom_MouseDown(object sender, MouseEventArgs e) => SetButtonImage(roundedButtonAddPlaylistFrom, ImageState.AddFromClick);
@@ -668,6 +690,11 @@ namespace MP3Player
         private void RoundedButtonLeft_MouseEnter(object sender, EventArgs e) => SetButtonImage(roundedButtonLeft, ImageState.LeftFocus);
         private void RoundedButtonLeft_MouseLeave(object sender, EventArgs e) => SetButtonImage(roundedButtonLeft, ImageState.Left);
         private void RoundedButtonLeft_MouseDown(object sender, MouseEventArgs e) => SetButtonImage(roundedButtonLeft, ImageState.LeftClick);
+
+        private void RoundedButtonSettings_MouseClick(object sender, MouseEventArgs e)
+        {
+            // ОТКРЫТИЕ ФОРМЫ НАСТРОЕК
+        }
 
         private void RoundedButtonAddPlaylist_MouseClick(object sender, MouseEventArgs e)
         {
@@ -831,6 +858,9 @@ namespace MP3Player
             else if (image == ImageState.AddFrom) button.BackgroundImage = Image.FromFile("Images/ButtonImages/AddFrom.png");
             else if (image == ImageState.AddFromFocus) button.BackgroundImage = Image.FromFile("Images/ButtonImages/AddFromEnter.png");
             else if (image == ImageState.AddFromClick) button.BackgroundImage = Image.FromFile("Images/ButtonImages/AddFromClick.png");
+            else if (image == ImageState.Settings) button.BackgroundImage = Image.FromFile("Images/ButtonImages/Settings.png");
+            else if (image == ImageState.SettingsFocus) button.BackgroundImage = Image.FromFile("Images/ButtonImages/SettingsEnter.png");
+            else if (image == ImageState.SettingsClick) button.BackgroundImage = Image.FromFile("Images/ButtonImages/SettingsClick.png");
         }
 
         private void RoundedButton1_MouseDown(object sender, MouseEventArgs e)
@@ -856,6 +886,7 @@ namespace MP3Player
             {
                 SetButtonImage(roundedButtonPause, ImageState.Play);
                 roundedButtonPause.ButtonState = ButtonState.Play;
+                Icon = Icon.ExtractAssociatedIcon("Images/ButtonImages/ButtonStatePlay.ico");
 
                 // ПЕСНЯ НАЧИНАЕТ ИГРАТЬ
 
@@ -872,6 +903,7 @@ namespace MP3Player
             {
                 SetButtonImage(roundedButtonPause, ImageState.Pause);
                 roundedButtonPause.ButtonState = ButtonState.Pause;
+                Icon = Icon.ExtractAssociatedIcon("Images/ButtonImages/ButtonStatePause.ico");
 
                 // ПЕСНЯ СТАВИТСЯ НА ПАУЗУ
 
@@ -962,6 +994,7 @@ namespace MP3Player
             roundedButtonAddPlaylist.Location = new Point(panel1.Location.X + panel1.Width + roundedButtonAddPlaylist.Width / 4, panel1.Location.Y + roundedButtonAddPlaylist.Height / 4);
             roundedButtonAddSong.Location = new Point(Convert.ToInt32(panel2.Location.X - roundedButtonAddSong.Width * 1.2), panel2.Location.Y + roundedButtonAddSong.Height / 4);
             roundedButtonAddPlaylistFrom.Location = new Point(roundedButtonAddPlaylist.Location.X, roundedButtonAddPlaylist.Bottom + roundedButtonAddPlaylistFrom.Height / 4);
+            roundedButtonSettings.Location = new Point(roundedButtonAddPlaylistFrom.Location.X, roundedButtonAddPlaylistFrom.Bottom + roundedButtonSettings.Height / 4);
         }
 
         private Font GetFont(string fontName, float fontSize)
@@ -1026,7 +1059,7 @@ namespace MP3Player
 
             if (trackBarSongTime.Value == trackBarSongTime.Maximum) { }
 
-            Text = $"{TimeSpan.FromSeconds(trackBarSongTime.Value).TotalSeconds} >= {audioFileReader.TotalTime.TotalSeconds}";
+            //Text = $"{TimeSpan.FromSeconds(trackBarSongTime.Value).TotalSeconds} >= {audioFileReader.TotalTime.TotalSeconds}";
 
             if (TimeSpan.FromSeconds(trackBarSongTime.Value).TotalSeconds + 1 >= Math.Round(audioFileReader.TotalTime.TotalSeconds, 0))
             {
