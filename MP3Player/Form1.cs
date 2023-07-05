@@ -1143,7 +1143,7 @@ namespace MP3Player
 
         private void Form1_Resize(object sender, EventArgs e)
         {
-            Text = $"{Width}x{Height}";
+            //Text = $"{Width}x{Height}";
             MoveControls();
         }
 
