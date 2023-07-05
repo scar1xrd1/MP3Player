@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.trackBarSongTime = new System.Windows.Forms.TrackBar();
             this.labelCurrentSongTime = new System.Windows.Forms.Label();
             this.labelSongTime = new System.Windows.Forms.Label();
@@ -203,8 +204,9 @@
             this.Controls.Add(this.labelCurrentSongTime);
             this.Controls.Add(this.trackBarSongTime);
             this.Controls.Add(this.panel1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form1";
-            this.Text = "Form1";
+            this.Text = "MP3Player";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.Resize += new System.EventHandler(this.Form1_Resize);
             ((System.ComponentModel.ISupportInitialize)(this.trackBarSongTime)).EndInit();
