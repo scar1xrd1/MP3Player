@@ -1,6 +1,7 @@
 ﻿using NAudio.Wave;
 using Newtonsoft.Json;
 using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -28,7 +29,10 @@ namespace MP3Player
         RoundedButton roundedButtonAddSong;
         RoundedButton roundedButtonAddPlaylistFrom;
         RoundedButton roundedButtonSettings;
+        RoundedButton roundedButtonShuffle;
+        RoundedButton roundedButtonRepeat;
 
+        Random random = new Random();
         List<Playlist> playlists;
         List<string> songs;
         int currentPlaylist = 0;
@@ -40,6 +44,8 @@ namespace MP3Player
 
         int volume;
         bool muted;
+        bool repeat;
+        bool shuffle;
 
         FontFamily[] fontFamilies = FontFamily.Families;
 
@@ -73,7 +79,7 @@ namespace MP3Player
         {
             //if(loadedData)
             
-            MyData myData = new MyData(currentPlaylist, currentSong, trackBarVolume.Value, muted, trackBarSongTime.Value);
+            MyData myData = new MyData(currentPlaylist, currentSong, trackBarVolume.Value, muted, trackBarSongTime.Value, shuffle, repeat);
 
             //File.Delete("Data/MyData.txt");
             //File.Delete("Data/Playlists.txt");
@@ -113,7 +119,15 @@ namespace MP3Player
                     currentPlaylist = myData.CurrentPlaylist;
                     currentSong = myData.CurrentSong;
                     trackBarVolume.Value = myData.Volume;
-                    
+
+                    shuffle = myData.Shuffle;
+                    if (shuffle) SetButtonImage(roundedButtonShuffle, ImageState.ShuffleEnabled);
+                    else SetButtonImage(roundedButtonShuffle, ImageState.Shuffle);
+
+                    repeat = myData.Repeat;
+                    if (shuffle) SetButtonImage(roundedButtonShuffle, ImageState.RepeatEnabled);
+                    else SetButtonImage(roundedButtonShuffle, ImageState.Repeat);
+
                     muted = myData.Muted;
                     
 
@@ -557,7 +571,7 @@ namespace MP3Player
             // roundedButtonPause
             roundedButtonPause = new RoundedButton();
             roundedButtonPause.BackColor = Color.Transparent;
-            roundedButtonPause.BackgroundImage = Image.FromFile("Images/ButtonImages/ButtonStatePause.png");
+            roundedButtonPause.BackgroundImage = Image.FromFile("Images/ButtonImages/Pause.png");
             roundedButtonPause.BackgroundImageLayout = ImageLayout.Zoom;
             roundedButtonPause.Size = new Size(75, 75);
             roundedButtonPause.FlatStyle = FlatStyle.Flat;
@@ -652,6 +666,34 @@ namespace MP3Player
             roundedButtonSettings.MouseEnter += RoundedButtonSettings_MouseEnter;
             roundedButtonSettings.MouseUp += RoundedButtonSettings_MouseEnter;
             roundedButtonSettings.MouseClick += RoundedButtonSettings_MouseClick;
+            // roundedButtonRepeat
+            roundedButtonRepeat = new RoundedButton();
+            roundedButtonRepeat.BackColor = Color.Transparent;
+            roundedButtonRepeat.BackgroundImage = Image.FromFile("Images/ButtonImages/Repeat.png");
+            roundedButtonRepeat.BackgroundImageLayout = ImageLayout.Zoom;
+            roundedButtonRepeat.Size = new Size(40, 40);
+            roundedButtonRepeat.FlatStyle = FlatStyle.Flat;
+            roundedButtonRepeat.FlatAppearance.BorderSize = 0;
+            roundedButtonRepeat.CornerRadius = cornerRadiusButtons;
+            roundedButtonRepeat.MouseDown += RoundedButtonRepeat_MouseDown;
+            roundedButtonRepeat.MouseLeave += RoundedButtonRepeat_MouseLeave;
+            roundedButtonRepeat.MouseEnter += RoundedButtonRepeat_MouseEnter;
+            roundedButtonRepeat.MouseUp += RoundedButtonRepeat_MouseEnter;
+            roundedButtonRepeat.MouseClick += RoundedButtonRepeat_MouseClick;
+            // roundedButtonShuffle
+            roundedButtonShuffle = new RoundedButton();
+            roundedButtonShuffle.BackColor = Color.Transparent;
+            roundedButtonShuffle.BackgroundImage = Image.FromFile("Images/ButtonImages/Shuffle.png");
+            roundedButtonShuffle.BackgroundImageLayout = ImageLayout.Zoom;
+            roundedButtonShuffle.Size = new Size(40, 40);
+            roundedButtonShuffle.FlatStyle = FlatStyle.Flat;
+            roundedButtonShuffle.FlatAppearance.BorderSize = 0;
+            roundedButtonShuffle.CornerRadius = cornerRadiusButtons;
+            roundedButtonShuffle.MouseDown += RoundedButtonShuffle_MouseDown;
+            roundedButtonShuffle.MouseLeave += RoundedButtonShuffle_MouseLeave;
+            roundedButtonShuffle.MouseEnter += RoundedButtonShuffle_MouseEnter;
+            roundedButtonShuffle.MouseUp += RoundedButtonShuffle_MouseEnter;
+            roundedButtonShuffle.MouseClick += RoundedButtonShuffle_MouseClick;
             // trackBarSongTime
             trackBarSongTime.Size = new Size(roundedPictureBox.Width * 2 - trackBarSongTime.Width, trackBarSongTime.Size.Height);
             // trackBarVolume
@@ -667,29 +709,85 @@ namespace MP3Player
             Controls.Add(roundedButtonAddPlaylist);
             Controls.Add(roundedButtonAddSong);
             Controls.Add(roundedButtonAddPlaylistFrom);
-            Controls.Add(roundedButtonSettings);
+            //Controls.Add(roundedButtonSettings);
+            Controls.Add(roundedButtonRepeat);
+            Controls.Add(roundedButtonShuffle);
             // other 
             MoveControls();
-        }       
+        }        
 
-        private void RoundedButtonSettings_MouseEnter(object sender, EventArgs e) => SetButtonImage(roundedButtonSettings, ImageState.SettingsFocus);
+        private void RoundedButtonShuffle_MouseEnter(object sender, EventArgs e)
+        {
+            if(shuffle) SetButtonImage(roundedButtonShuffle, ImageState.ShuffleEnabledEnter);
+            else SetButtonImage(roundedButtonShuffle, ImageState.ShuffleEnter);
+        }
+        private void RoundedButtonShuffle_MouseLeave(object sender, EventArgs e)
+        {
+            if(shuffle) SetButtonImage(roundedButtonShuffle, ImageState.ShuffleEnabled);
+            else SetButtonImage(roundedButtonShuffle, ImageState.Shuffle);
+        }
+        private void RoundedButtonShuffle_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (shuffle) SetButtonImage(roundedButtonShuffle, ImageState.ShuffleEnabledClick);
+            else SetButtonImage(roundedButtonShuffle, ImageState.ShuffleClick);
+        }
+        private void RoundedButtonRepeat_MouseEnter(object sender, EventArgs e)
+        {
+            if(repeat) SetButtonImage(roundedButtonRepeat, ImageState.RepeatEnabledEnter);
+            else SetButtonImage(roundedButtonRepeat, ImageState.RepeatEnter);
+        }
+        private void RoundedButtonRepeat_MouseLeave(object sender, EventArgs e)
+        {
+            if(repeat) SetButtonImage(roundedButtonRepeat, ImageState.RepeatEnabled);
+            else SetButtonImage(roundedButtonRepeat, ImageState.Repeat);
+        }
+        private void RoundedButtonRepeat_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (repeat) SetButtonImage(roundedButtonRepeat, ImageState.RepeatEnabledClick);
+            else SetButtonImage(roundedButtonRepeat, ImageState.RepeatClick);
+        }
+        private void RoundedButtonSettings_MouseEnter(object sender, EventArgs e) => SetButtonImage(roundedButtonSettings, ImageState.SettingsEnter);
         private void RoundedButtonSettings_MouseLeave(object sender, EventArgs e) => SetButtonImage(roundedButtonSettings, ImageState.Settings);
         private void RoundedButtonSettings_MouseDown(object sender, MouseEventArgs e) => SetButtonImage(roundedButtonSettings, ImageState.SettingsClick);
-        private void RoundedButtonAddPlaylistFrom_MouseEnter(object sender, EventArgs e) => SetButtonImage(roundedButtonAddPlaylistFrom, ImageState.AddFromFocus);
+        private void RoundedButtonAddPlaylistFrom_MouseEnter(object sender, EventArgs e) => SetButtonImage(roundedButtonAddPlaylistFrom, ImageState.AddFromEnter);
         private void RoundedButtonAddPlaylistFrom_MouseLeave(object sender, EventArgs e) => SetButtonImage(roundedButtonAddPlaylistFrom, ImageState.AddFrom);
         private void RoundedButtonAddPlaylistFrom_MouseDown(object sender, MouseEventArgs e) => SetButtonImage(roundedButtonAddPlaylistFrom, ImageState.AddFromClick);
-        private void RoundedButtonAddSong_MouseEnter(object sender, EventArgs e) => SetButtonImage(roundedButtonAddSong, ImageState.AddFocus);
+        private void RoundedButtonAddSong_MouseEnter(object sender, EventArgs e) => SetButtonImage(roundedButtonAddSong, ImageState.AddEnter);
         private void RoundedButtonAddSong_MouseLeave(object sender, EventArgs e) => SetButtonImage(roundedButtonAddSong, ImageState.Add);
         private void RoundedButtonAddSong_MouseDown(object sender, MouseEventArgs e) => SetButtonImage(roundedButtonAddSong, ImageState.AddClick);
-        private void RoundedButtonAddPlaylist_MouseEnter(object sender, EventArgs e) => SetButtonImage(roundedButtonAddPlaylist, ImageState.AddFocus);
+        private void RoundedButtonAddPlaylist_MouseEnter(object sender, EventArgs e) => SetButtonImage(roundedButtonAddPlaylist, ImageState.AddEnter);
         private void RoundedButtonAddPlaylist_MouseLeave(object sender, EventArgs e) => SetButtonImage(roundedButtonAddPlaylist, ImageState.Add);
         private void RoundedButtonAddPlaylist_MouseDown(object sender, MouseEventArgs e) => SetButtonImage(roundedButtonAddPlaylist, ImageState.AddClick);
-        private void RoundedButtonRight_MouseEnter(object sender, EventArgs e) => SetButtonImage(roundedButtonRight, ImageState.RightFocus);
+        private void RoundedButtonRight_MouseEnter(object sender, EventArgs e) => SetButtonImage(roundedButtonRight, ImageState.RightEnter);
         private void RoundedButtonRight_MouseLeave(object sender, EventArgs e) => SetButtonImage(roundedButtonRight, ImageState.Right);
         private void RoundedButtonRight_MouseDown(object sender, MouseEventArgs e) => SetButtonImage(roundedButtonRight, ImageState.RightClick);
-        private void RoundedButtonLeft_MouseEnter(object sender, EventArgs e) => SetButtonImage(roundedButtonLeft, ImageState.LeftFocus);
+        private void RoundedButtonLeft_MouseEnter(object sender, EventArgs e) => SetButtonImage(roundedButtonLeft, ImageState.LeftEnter);
         private void RoundedButtonLeft_MouseLeave(object sender, EventArgs e) => SetButtonImage(roundedButtonLeft, ImageState.Left);
         private void RoundedButtonLeft_MouseDown(object sender, MouseEventArgs e) => SetButtonImage(roundedButtonLeft, ImageState.LeftClick);
+
+        private void RoundedButtonShuffle_MouseClick(object sender, MouseEventArgs e)
+        {
+            if(shuffle)
+            {
+                shuffle = false;
+            }
+            else
+            {
+                shuffle = true;
+            }
+        }
+
+        private void RoundedButtonRepeat_MouseClick(object sender, MouseEventArgs e)
+        {
+            if(repeat)
+            {
+                repeat = false;
+            }
+            else
+            {
+                repeat = true;
+            }
+        }
 
         private void RoundedButtonSettings_MouseClick(object sender, MouseEventArgs e)
         {
@@ -809,7 +907,16 @@ namespace MP3Player
             {
                 if (currentSong + 1 < songs.Count)
                 {
-                    currentSong++;
+                    if (shuffle && songs.Count > 1)
+                    {
+                        int cS = currentSong;
+                        while (true)
+                        {
+                            currentSong = random.Next(0, songs.Count);
+                            if (currentSong != cS) break;
+                        }
+                    }
+                    else currentSong++;
 
                     Label label = new Label();
                     var tagLib = TagLib.File.Create(songs[currentSong]);
@@ -822,7 +929,16 @@ namespace MP3Player
                 }
                 else if (currentSong + 1 == songs.Count)
                 {
-                    currentSong = 0;
+                    if (shuffle && songs.Count > 1)
+                    {
+                        int cS = currentSong;
+                        while(true)
+                        {
+                            currentSong = random.Next(0, songs.Count);
+                            if (currentSong != cS) break;
+                        }                        
+                    }
+                    else currentSong = 0;
 
                     Label label = new Label();
                     var tagLib = TagLib.File.Create(songs[currentSong]);
@@ -840,27 +956,29 @@ namespace MP3Player
 
         private void SetButtonImage(Button button, ImageState image)
         {
-            if (image == ImageState.Pause) button.BackgroundImage = Image.FromFile("Images/ButtonImages/ButtonStatePause.png");
-            else if (image == ImageState.PauseFocus) button.BackgroundImage = Image.FromFile("Images/ButtonImages/ButtonStatePauseFocusEnter.png");
-            else if (image == ImageState.PauseClick) button.BackgroundImage = Image.FromFile("Images/ButtonImages/ButtonStatePauseClick.png");
-            else if (image == ImageState.Play) button.BackgroundImage = Image.FromFile("Images/ButtonImages/ButtonStatePlay.png");
-            else if (image == ImageState.PlayFocus) button.BackgroundImage = Image.FromFile("Images/ButtonImages/ButtonStatePlayFocusEnter.png");
-            else if (image == ImageState.PlayClick) button.BackgroundImage = Image.FromFile("Images/ButtonImages/ButtonStatePlayClick.png");
-            else if (image == ImageState.Left) button.BackgroundImage = Image.FromFile("Images/ButtonImages/Left.png");
-            else if (image == ImageState.LeftFocus) button.BackgroundImage = Image.FromFile("Images/ButtonImages/LeftEnter.png");
-            else if (image == ImageState.LeftClick) button.BackgroundImage = Image.FromFile("Images/ButtonImages/LeftClick.png");
-            else if (image == ImageState.Right) button.BackgroundImage = Image.FromFile("Images/ButtonImages/Right.png");
-            else if (image == ImageState.RightFocus) button.BackgroundImage = Image.FromFile("Images/ButtonImages/RightEnter.png");
-            else if (image == ImageState.RightClick) button.BackgroundImage = Image.FromFile("Images/ButtonImages/RightClick.png");
-            else if (image == ImageState.Add) button.BackgroundImage = Image.FromFile("Images/ButtonImages/Add.png");
-            else if (image == ImageState.AddFocus) button.BackgroundImage = Image.FromFile("Images/ButtonImages/AddEnter.png");
-            else if (image == ImageState.AddClick) button.BackgroundImage = Image.FromFile("Images/ButtonImages/AddClick.png");
-            else if (image == ImageState.AddFrom) button.BackgroundImage = Image.FromFile("Images/ButtonImages/AddFrom.png");
-            else if (image == ImageState.AddFromFocus) button.BackgroundImage = Image.FromFile("Images/ButtonImages/AddFromEnter.png");
-            else if (image == ImageState.AddFromClick) button.BackgroundImage = Image.FromFile("Images/ButtonImages/AddFromClick.png");
-            else if (image == ImageState.Settings) button.BackgroundImage = Image.FromFile("Images/ButtonImages/Settings.png");
-            else if (image == ImageState.SettingsFocus) button.BackgroundImage = Image.FromFile("Images/ButtonImages/SettingsEnter.png");
-            else if (image == ImageState.SettingsClick) button.BackgroundImage = Image.FromFile("Images/ButtonImages/SettingsClick.png");
+            button.BackgroundImage = Image.FromFile($"Images/ButtonImages/{Enum.GetName(typeof(ImageState), image)}.png");
+            //if (image == ImageState.Pause) button.BackgroundImage = Image.FromFile("Images/ButtonImages/ButtonStatePause.png");
+            //else if (image == ImageState.PauseFocus) button.BackgroundImage = Image.FromFile("Images/ButtonImages/ButtonStatePauseFocusEnter.png");
+            //else if (image == ImageState.PauseClick) button.BackgroundImage = Image.FromFile("Images/ButtonImages/ButtonStatePauseClick.png");
+            //else if (image == ImageState.Play) button.BackgroundImage = Image.FromFile("Images/ButtonImages/ButtonStatePlay.png");
+            //else if (image == ImageState.PlayFocus) button.BackgroundImage = Image.FromFile("Images/ButtonImages/ButtonStatePlayFocusEnter.png");
+            //else if (image == ImageState.PlayClick) button.BackgroundImage = Image.FromFile("Images/ButtonImages/ButtonStatePlayClick.png");
+            //else if (image == ImageState.Left) button.BackgroundImage = Image.FromFile("Images/ButtonImages/Left.png");
+            //else if (image == ImageState.LeftFocus) button.BackgroundImage = Image.FromFile("Images/ButtonImages/LeftEnter.png");
+            //else if (image == ImageState.LeftClick) button.BackgroundImage = Image.FromFile("Images/ButtonImages/LeftClick.png");
+            //else if (image == ImageState.Right) button.BackgroundImage = Image.FromFile("Images/ButtonImages/Right.png");
+            //else if (image == ImageState.RightFocus) button.BackgroundImage = Image.FromFile("Images/ButtonImages/RightEnter.png");
+            //else if (image == ImageState.RightClick) button.BackgroundImage = Image.FromFile("Images/ButtonImages/RightClick.png");
+            //else if (image == ImageState.Add) button.BackgroundImage = Image.FromFile("Images/ButtonImages/Add.png");
+            //else if (image == ImageState.AddFocus) button.BackgroundImage = Image.FromFile("Images/ButtonImages/AddEnter.png");
+            //else if (image == ImageState.AddClick) button.BackgroundImage = Image.FromFile("Images/ButtonImages/AddClick.png");
+            //else if (image == ImageState.AddFrom) button.BackgroundImage = Image.FromFile("Images/ButtonImages/AddFrom.png");
+            //else if (image == ImageState.AddFromFocus) button.BackgroundImage = Image.FromFile("Images/ButtonImages/AddFromEnter.png");
+            //else if (image == ImageState.AddFromClick) button.BackgroundImage = Image.FromFile("Images/ButtonImages/AddFromClick.png");
+            //else if (image == ImageState.Settings) button.BackgroundImage = Image.FromFile("Images/ButtonImages/Settings.png");
+            //else if (image == ImageState.SettingsFocus) button.BackgroundImage = Image.FromFile("Images/ButtonImages/SettingsEnter.png");
+            //else if (image == ImageState.SettingsClick) button.BackgroundImage = Image.FromFile("Images/ButtonImages/SettingsClick.png");
+            //else if()
         }
 
         private void RoundedButton1_MouseDown(object sender, MouseEventArgs e)
@@ -876,8 +994,8 @@ namespace MP3Player
 
         private void RoundedButton1_MouseEnter(object sender, EventArgs e)
         {
-            if (roundedButtonPause.ButtonState == ButtonState.Pause) SetButtonImage(roundedButtonPause, ImageState.PauseFocus);
-            else SetButtonImage(roundedButtonPause, ImageState.PlayFocus);
+            if (roundedButtonPause.ButtonState == ButtonState.Pause) SetButtonImage(roundedButtonPause, ImageState.PauseEnter);
+            else SetButtonImage(roundedButtonPause, ImageState.PlayEnter);
         }
 
         private void RoundedButton1_MouseClick(object sender, MouseEventArgs e)
@@ -886,7 +1004,7 @@ namespace MP3Player
             {
                 SetButtonImage(roundedButtonPause, ImageState.Play);
                 roundedButtonPause.ButtonState = ButtonState.Play;
-                Icon = Icon.ExtractAssociatedIcon("Images/ButtonImages/ButtonStatePlay.ico");
+                Icon = Icon.ExtractAssociatedIcon("Images/ButtonImages/Play.ico");
 
                 // ПЕСНЯ НАЧИНАЕТ ИГРАТЬ
 
@@ -995,6 +1113,8 @@ namespace MP3Player
             roundedButtonAddSong.Location = new Point(Convert.ToInt32(panel2.Location.X - roundedButtonAddSong.Width * 1.2), panel2.Location.Y + roundedButtonAddSong.Height / 4);
             roundedButtonAddPlaylistFrom.Location = new Point(roundedButtonAddPlaylist.Location.X, roundedButtonAddPlaylist.Bottom + roundedButtonAddPlaylistFrom.Height / 4);
             roundedButtonSettings.Location = new Point(roundedButtonAddPlaylistFrom.Location.X, roundedButtonAddPlaylistFrom.Bottom + roundedButtonSettings.Height / 4);
+            roundedButtonRepeat.Location = new Point(roundedButtonRight.Location.X + roundedButtonRight.Width + 10, roundedButtonRight.Location.Y + roundedButtonRepeat.Height / 8);
+            roundedButtonShuffle.Location = new Point(roundedButtonLeft.Location.X - roundedButtonLeft.Width, roundedButtonLeft.Location.Y + roundedButtonShuffle.Height / 8);
         }
 
         private Font GetFont(string fontName, float fontSize)
@@ -1063,7 +1183,18 @@ namespace MP3Player
 
             if (TimeSpan.FromSeconds(trackBarSongTime.Value).TotalSeconds + 1 >= Math.Round(audioFileReader.TotalTime.TotalSeconds, 0))
             {
-                if (waveOut.PlaybackState == PlaybackState.Stopped) RoundedButtonRight_MouseClick(sender, new MouseEventArgs(MouseButtons.Left, 2, 0, 0, 0));
+                if (waveOut.PlaybackState == PlaybackState.Stopped)
+                {
+                    if (repeat)
+                    {
+                        Label label = new Label();
+                        var tagLib = TagLib.File.Create(songs[currentSong]);
+                        label.Text = Path.GetFileName(tagLib.Tag.Title);
+                        if (label.Text == string.Empty) label.Text = Path.GetFileNameWithoutExtension(songs[currentSong]);
+                        Title_MouseClick(label, new MouseEventArgs(MouseButtons.Left, 0, 0,0,0));
+                    }
+                    else RoundedButtonRight_MouseClick(sender, new MouseEventArgs(MouseButtons.Left, 2, 0, 0, 0));
+                }
             }
 
             if (playlists != null && songs != null) SaveData();
@@ -1082,14 +1213,18 @@ namespace MP3Player
         public int Volume { get; set; }
         public bool Muted { get; set; }
         public int SongTime { get; set; }
+        public bool Shuffle { get; set; }
+        public bool Repeat { get; set; }
 
-        public MyData(int currentPlaylist, int currentSong, int volume, bool muted, int songTime)
+        public MyData(int currentPlaylist, int currentSong, int volume, bool muted, int songTime, bool shuffle, bool repeat)
         {
             CurrentPlaylist = currentPlaylist;
             CurrentSong = currentSong;
             Volume = volume;
             Muted = muted;
             SongTime = songTime;
+            Shuffle = shuffle;
+            Repeat = repeat;
         }
     }
 
