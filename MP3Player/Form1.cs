@@ -125,8 +125,8 @@ namespace MP3Player
                     else SetButtonImage(roundedButtonShuffle, ImageState.Shuffle);
 
                     repeat = myData.Repeat;
-                    if (shuffle) SetButtonImage(roundedButtonShuffle, ImageState.RepeatEnabled);
-                    else SetButtonImage(roundedButtonShuffle, ImageState.Repeat);
+                    if (repeat) SetButtonImage(roundedButtonRepeat, ImageState.RepeatEnabled);
+                    else SetButtonImage(roundedButtonRepeat, ImageState.Repeat);
 
                     muted = myData.Muted;
                     
